@@ -1,0 +1,64 @@
+package com.valrichter.docushield.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.valrichter.docushield.exception.ApiException;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.util.AlternativeJdkIdGenerator;
+
+import java.time.LocalDateTime;
+
+import static java.time.LocalDateTime.now;
+
+@Getter
+@Setter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
+
+// De esta heredan todos las entidades para su auditoría. Al momento de crearce o actualizar una entidad.
+public abstract class Auditable {
+    @Id
+    @SequenceGenerator(name = "primary_key_seq", sequenceName = "primary_key_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "primary_key_seq")
+    @Column(name = "id", updatable = false)
+    private Long id;
+    private String referenceId = new AlternativeJdkIdGenerator().generateId().toString();
+    @NotNull
+    private Long createdBy;
+    @NotNull
+    private Long updatedBy;
+    @NotNull
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @CreatedDate
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        var userId = 1L;
+        if (userId == null) {
+            throw new ApiException("Cannot persist entity without  ID");
+        }
+        setCreatedAt(now());
+        setCreatedBy(userId);
+        setUpdatedAt(now());
+        setUpdatedBy(userId);
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        var userId = 1L;
+        if (userId == null) {
+            throw new IllegalStateException("Cannot update entity without  ID");
+        } ;
+        setUpdatedAt(now());
+        setUpdatedBy(userId);
+    }
+}
