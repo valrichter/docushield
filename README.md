@@ -21,3 +21,5 @@ Parametros:
 - **@PrePersist**: Este metodo se ejecuta antes de que se inserte una nueva entidad en la base de datos. En este caso, esta configurando campos de auditoría como createdAt, createdBy, updatedAt, y updatedBy, y verifica que userId no sea nulo.  
 
 - **@PreUpdate**: Aunque no se muestra aqui, un metodo anotado con @PreUpdate haria algo similar, pero antes de que se actualice una entidad existente.
+
+![Auditable](Screenshot_20240909_211739.png)
