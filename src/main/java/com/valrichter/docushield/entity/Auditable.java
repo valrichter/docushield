@@ -1,6 +1,7 @@
 package com.valrichter.docushield.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.valrichter.docushield.domain.RequestContext;
 import com.valrichter.docushield.exception.ApiException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -42,7 +43,7 @@ public abstract class Auditable {
 
     @PrePersist
     public void prePersist() {
-        var userId = 1L;
+        var userId = RequestContext.getUserId();
         if (userId == null) {
             throw new ApiException("Cannot persist entity without  ID");
         }
@@ -54,7 +55,7 @@ public abstract class Auditable {
 
     @PreUpdate
     public void preUpdate() {
-        var userId = 1L;
+        var userId = RequestContext.getUserId();
         if (userId == null) {
             throw new IllegalStateException("Cannot update entity without  ID");
         } ;
