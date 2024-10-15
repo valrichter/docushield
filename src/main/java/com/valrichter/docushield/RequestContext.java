@@ -28,7 +28,7 @@ public class RequestContext {
      * Este metodo es útil para limpiar el contexto antes de manejar una nueva solicitud.
      * </p>
      */
-    private static void start() {
+    public static void start() {
         USER_ID.remove();
     }
 
