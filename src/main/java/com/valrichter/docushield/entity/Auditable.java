@@ -1,15 +1,15 @@
 package com.valrichter.docushield.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.valrichter.docushield.RequestContext;
+import com.valrichter.docushield.exception.ApiException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.util.AlternativeJdkIdGenerator;
-
 import java.time.LocalDateTime;
 
 /**
@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
  *       propiedades relacionadas con fechas y usuarios que crean o modifican la entidad.</li>
  *   <li>{@code @JsonIgnoreProperties}: Omite las propiedades {@code createdAt} y {@code updatedAt}
  *       en la serialización JSON, pero permite que se incluyan en respuestas GET.</li>
- *   <li>{@code @Getter}: Proporciona métodos getter automáticos para todas las propiedades de la clase.</li>
  * </ul>
  * <p>
  * Esta clase proporciona auditoría básica para cualquier entidad que la extienda,
@@ -36,6 +35,7 @@ import java.time.LocalDateTime;
  * </p>
  */
 @Getter
+@Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = { "createdAt", "updatedAt" }, allowGetters = true)
@@ -87,5 +87,48 @@ public abstract class Auditable {
     @CreatedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    /**
+     * Metodo ejecutado automáticamente antes de que la entidad sea persistida por primera vez en la base de datos.
+     * <p>
+     * Este metodo verifica si existe un ID de usuario en el {@code RequestContext}. Si no hay un usuario,
+     * lanza una excepción, ya que es obligatorio un ID de usuario para auditar la creación de la entidad.
+     * Además, establece los campos de auditoría {@code createdAt}, {@code createdBy}, {@code updatedBy} y {@code updatedAt}.
+     * </p>
+     *
+     * @throws ApiException si no se encuentra el ID de usuario en el {@code RequestContext}.
+     */
+    @PrePersist
+    public void prePersist() {
+        Long userId = RequestContext.getUserId();
+        if (userId == null) {
+            throw new ApiException("Cannot persist entity without user ID in RequestContext");
+        }
+        setCreatedAt(LocalDateTime.now());
+        setCreatedBy(userId);
+        setUpdatedBy(userId);
+        setUpdatedAt(LocalDateTime.now());
+    }
+
+    /**
+     * Metodo ejecutado automáticamente antes de que la entidad sea actualizada en la base de datos.
+     * <p>
+     * Este metodo verifica si existe un ID de usuario en el {@code RequestContext}. Si no hay un usuario,
+     * lanza una excepción, ya que es obligatorio un ID de usuario para auditar la actualización de la entidad.
+     * Además, actualiza los campos de auditoría {@code updatedAt} y {@code updatedBy}.
+     * </p>
+     *
+     * @throws ApiException si no se encuentra el ID de usuario en el {@code RequestContext}.
+     */
+    @PreUpdate
+    public void beforeUpdate() {
+        Long userId = RequestContext.getUserId();
+        if (userId == null) {
+            throw new ApiException("Cannot persist entity without user ID in RequestContext");
+        }
+        setUpdatedAt(LocalDateTime.now());
+        setUpdatedBy(userId);
+    }
+
 }
 
