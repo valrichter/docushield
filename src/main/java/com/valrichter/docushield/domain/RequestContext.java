@@ -1,4 +1,4 @@
-package com.valrichter.docushield;
+package com.valrichter.docushield.domain;
 
 /**
  * Proporciona un contexto de solicitud para almacenar y recuperar el ID del usuario

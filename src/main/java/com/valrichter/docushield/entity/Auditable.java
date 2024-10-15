@@ -1,7 +1,7 @@
 package com.valrichter.docushield.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.valrichter.docushield.RequestContext;
+import com.valrichter.docushield.domain.RequestContext;
 import com.valrichter.docushield.exception.ApiException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
